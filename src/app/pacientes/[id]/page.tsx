@@ -39,13 +39,23 @@ interface Paciente {
   imagenes: Imagen[];
 }
 
+// Definir un tipo para el tratamiento que espera el modal
+interface TratamientoModalData {
+  _id: string;
+  fecha: string;
+  procedimiento: string;
+  notas?: string;
+  diente?: number;
+  estado: 'pendiente' | 'en-proceso' | 'completado';
+}
+
 export default function DetallePacientePage() {
   const params = useParams();
   const [paciente, setPaciente] = useState<Paciente | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTratamiento, setSelectedTratamiento] = useState<any>(null);
+  const [selectedTratamiento, setSelectedTratamiento] = useState<TratamientoModalData | undefined>(undefined);
   const [isImagenModalOpen, setIsImagenModalOpen] = useState(false);
 
   useEffect(() => {
@@ -78,14 +88,22 @@ export default function DetallePacientePage() {
     }
   };
 
-  const handleEditTratamiento = (tratamiento: any) => {
-    setSelectedTratamiento(tratamiento);
+  const handleEditTratamiento = (tratamiento: Tratamiento) => {
+    // Convertir el tratamiento al formato que espera el modal
+    const tratamientoModal: TratamientoModalData = {
+      _id: tratamiento._id,
+      fecha: new Date(tratamiento.fecha).toISOString().split('T')[0],
+      procedimiento: tratamiento.procedimiento,
+      notas: tratamiento.notas,
+      estado: tratamiento.estado
+    };
+    setSelectedTratamiento(tratamientoModal);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedTratamiento(null);
+    setSelectedTratamiento(undefined);
   };
 
   const handleImagenAdded = async () => {
