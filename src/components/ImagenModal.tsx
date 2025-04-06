@@ -9,12 +9,14 @@ import Image from 'next/image';
 
 const imagenSchema = z.object({
   tipo: z.enum(['radiografia', 'fotografia', 'otro']),
-  descripcion: z.string().optional()
+  descripcion: z.string().optional(),
+  url: z.string().optional()
 });
 
 type ImagenFormData = {
   tipo: 'radiografia' | 'fotografia' | 'otro';
   descripcion?: string;
+  url?: string;
 };
 
 interface ImagenModalProps {
@@ -45,8 +47,10 @@ export default function ImagenModal({
   });
 
   const onSubmit = async (data: ImagenFormData) => {
-    if (!uploadedImageUrl) {
-      alert('Por favor, sube una imagen primero');
+    const imageUrl = data.url || uploadedImageUrl;
+    
+    if (!imageUrl) {
+      alert('Por favor, sube una imagen o ingresa una URL');
       return;
     }
 
@@ -58,7 +62,7 @@ export default function ImagenModal({
         },
         body: JSON.stringify({
           ...data,
-          url: uploadedImageUrl,
+          url: imageUrl,
           fecha: new Date().toISOString()
         }),
       });
@@ -111,7 +115,19 @@ export default function ImagenModal({
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Imagen
+                URL de la Imagen (opcional)
+              </label>
+              <input
+                type="url"
+                {...register('url')}
+                className="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                placeholder="https://ejemplo.com/imagen.jpg"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                O Subir Imagen
               </label>
               <CldUploadWidget
                 uploadPreset="dental_images"

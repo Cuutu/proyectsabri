@@ -11,7 +11,10 @@ const tratamientoSchema = z.object({
   }),
   procedimiento: z.string().min(1, 'El procedimiento es requerido'),
   notas: z.string().optional(),
-  diente: z.string().transform(num => num ? Number(num) : undefined).optional(),
+  diente: z.string().transform(num => num ? Number(num) : undefined).refine(
+    (num) => !num || (num >= 1 && num <= 48),
+    { message: 'El número de diente debe estar entre 1 y 48' }
+  ).optional(),
   estado: z.enum(['pendiente', 'en-proceso', 'completado'])
 });
 
@@ -151,8 +154,11 @@ export default function TratamientoModal({
               className="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               placeholder="Ej: 11"
               min="1"
-              max="32"
+              max="48"
             />
+            {errors.diente && (
+              <p className="mt-1 text-sm text-red-400">{errors.diente.message}</p>
+            )}
           </div>
 
           <div>
