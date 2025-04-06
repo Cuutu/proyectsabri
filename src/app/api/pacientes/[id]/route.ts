@@ -28,6 +28,55 @@ export async function GET(
   }
 }
 
+export async function PUT(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await connectDB();
+    const { id } = params;
+    const data = await request.json();
+
+    const paciente = await Paciente.findById(id);
+    if (!paciente) {
+      return NextResponse.json(
+        { error: 'Paciente no encontrado' },
+        { status: 404 }
+      );
+    }
+
+    // Actualizar los campos básicos
+    paciente.nombre = data.nombre;
+    paciente.apellido = data.apellido;
+    paciente.fechaNacimiento = data.fechaNacimiento;
+    paciente.dni = data.dni;
+    paciente.telefono = data.telefono;
+    paciente.email = data.email;
+
+    // Actualizar historia clínica
+    if (!paciente.historiaClinica) {
+      paciente.historiaClinica = {
+        antecedentes: '',
+        alergias: [],
+        tratamientos: []
+      };
+    }
+
+    paciente.historiaClinica.antecedentes = data.historiaClinica.antecedentes;
+    paciente.historiaClinica.alergias = data.historiaClinica.alergias;
+
+    await paciente.save();
+
+    return NextResponse.json(paciente);
+  } catch (error) {
+    console.error('Error al actualizar paciente:', error);
+    return NextResponse.json(
+      { error: 'Error al actualizar el paciente' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
