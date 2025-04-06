@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CldUploadWidget } from 'next-cloudinary';
+import { CldUploadWidget, CloudinaryUploadWidgetResults } from 'next-cloudinary';
 import Image from 'next/image';
 
 const imagenSchema = z.object({
@@ -119,9 +119,9 @@ export default function ImagenModal({
               </label>
               <CldUploadWidget
                 uploadPreset="dental_images"
-                onUpload={(result: any) => {
+                onSuccess={(result: CloudinaryUploadWidgetResults) => {
                   console.log('Resultado completo:', result);
-                  if (result.event === "success") {
+                  if (result.event === "success" && result.info && typeof result.info !== 'string') {
                     const url = result.info.secure_url;
                     console.log('URL de imagen:', url);
                     setUploadedImageUrl(url);

@@ -8,18 +8,19 @@ import ImagenModal from '@/components/ImagenModal';
 import Image from 'next/image';
 
 interface Tratamiento {
-  fecha: string;
+  _id: string;
+  fecha: Date;
   procedimiento: string;
   notas: string;
-  diente?: number;
   estado: 'pendiente' | 'en-proceso' | 'completado';
 }
 
 interface Imagen {
-  fecha: string;
-  tipo: 'radiografia' | 'fotografia' | 'otro';
+  _id: string;
   url: string;
+  tipo: string;
   descripcion?: string;
+  fecha: Date;
 }
 
 interface Paciente {
@@ -79,12 +80,15 @@ export default function DetallePacientePage() {
     fetchPaciente();
   }, [params.id]);
 
-  const handleTratamientoAdded = (tratamiento: TratamientoData) => {
-    // Recargar los datos del paciente
-    const response = fetch(`/api/pacientes/${params.id}`);
-    if (response.ok) {
-      const data = response.json();
-      setPaciente(data);
+  const handleTratamientoAdded = async () => {
+    try {
+      const response = await fetch(`/api/pacientes/${params.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setPaciente(data);
+      }
+    } catch (error) {
+      console.error('Error al recargar paciente:', error);
     }
   };
 
@@ -98,12 +102,15 @@ export default function DetallePacientePage() {
     setSelectedTratamiento(null);
   };
 
-  const handleImagenAdded = (imagen: ImagenData) => {
-    // Recargar los datos del paciente
-    const response = fetch(`/api/pacientes/${params.id}`);
-    if (response.ok) {
-      const data = response.json();
-      setPaciente(data);
+  const handleImagenAdded = async () => {
+    try {
+      const response = await fetch(`/api/pacientes/${params.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setPaciente(data);
+      }
+    } catch (error) {
+      console.error('Error al recargar paciente:', error);
     }
   };
 
@@ -203,7 +210,7 @@ export default function DetallePacientePage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700">
-                    {paciente.historiaClinica.tratamientos.map((tratamiento: any) => (
+                    {paciente.historiaClinica.tratamientos.map((tratamiento: Tratamiento) => (
                       <tr key={tratamiento._id} className="hover:bg-gray-700">
                         <td className="px-4 py-2 text-gray-300">
                           {new Date(tratamiento.fecha).toLocaleDateString()}
@@ -286,7 +293,7 @@ export default function DetallePacientePage() {
       <TratamientoModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        pacienteId={params.id}
+        pacienteId={params.id as string}
         onTratamientoAdded={handleTratamientoAdded}
         tratamientoToEdit={selectedTratamiento}
       />

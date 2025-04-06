@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import Paciente from '@/models/Paciente';
 
-interface TratamientoResponse {
-  success: boolean;
-  data?: {
-    mensaje: string;
-    [key: string]: any;
-  };
-  error?: string;
+// Definir una interfaz para el tratamiento
+interface Tratamiento {
+  _id: string;
+  fecha: Date;
+  procedimiento: string;
+  notas: string;
+  estado: 'pendiente' | 'en-proceso' | 'completado';
 }
 
 export async function PUT(
@@ -29,7 +29,7 @@ export async function PUT(
 
     // Encontrar y actualizar el tratamiento específico
     const tratamientoIndex = paciente.historiaClinica.tratamientos.findIndex(
-      (t: any) => t._id.toString() === params.tratamientoId
+      (t: Tratamiento) => t._id.toString() === params.tratamientoId
     );
 
     if (tratamientoIndex === -1) {
