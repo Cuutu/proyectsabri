@@ -30,14 +30,13 @@ export default function ImagenModal({
   pacienteId,
   onImagenAdded
 }: ImagenModalProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState('');
 
   const {
     register,
     handleSubmit,
     reset,
-    formState: { isSubmitting: formIsSubmitting }
+    formState: { isSubmitting }
   } = useForm<ImagenFormData>({
     resolver: zodResolver(imagenSchema),
     defaultValues: {
@@ -51,7 +50,6 @@ export default function ImagenModal({
       return;
     }
 
-    setIsSubmitting(true);
     try {
       const response = await fetch(`/api/pacientes/${pacienteId}/imagenes`, {
         method: 'POST',
@@ -74,8 +72,6 @@ export default function ImagenModal({
     } catch (error) {
       console.error('Error:', error);
       alert('Error al guardar la imagen');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

@@ -39,20 +39,6 @@ interface Paciente {
   imagenes: Imagen[];
 }
 
-interface TratamientoData {
-  _id: string;
-  fecha: Date;
-  procedimiento: string;
-  notas: string;
-}
-
-interface ImagenData {
-  _id: string;
-  url: string;
-  tipo: string;
-  descripcion?: string;
-}
-
 export default function DetallePacientePage() {
   const params = useParams();
   const [paciente, setPaciente] = useState<Paciente | null>(null);
@@ -210,7 +196,7 @@ export default function DetallePacientePage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700">
-                    {paciente.historiaClinica.tratamientos.map((tratamiento: Tratamiento) => (
+                    {paciente.historiaClinica.tratamientos.map((tratamiento) => (
                       <tr key={tratamiento._id} className="hover:bg-gray-700">
                         <td className="px-4 py-2 text-gray-300">
                           {new Date(tratamiento.fecha).toLocaleDateString()}
@@ -263,8 +249,8 @@ export default function DetallePacientePage() {
             </div>
             {paciente.imagenes.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {paciente.imagenes.map((imagen, index) => (
-                  <div key={index} className="bg-gray-700 rounded-lg p-4">
+                {paciente.imagenes.map((imagen) => (
+                  <div key={imagen._id} className="bg-gray-700 rounded-lg p-4">
                     <Image
                       src={imagen.url}
                       alt={imagen.descripcion || 'Imagen dental'}
