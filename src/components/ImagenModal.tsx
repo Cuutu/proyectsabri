@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CldUploadWidget } from 'next-cloudinary';
+import Image from 'next/image';
 
 const imagenSchema = z.object({
   tipo: z.enum(['radiografia', 'fotografia', 'otro']),
@@ -36,7 +37,7 @@ export default function ImagenModal({
     register,
     handleSubmit,
     reset,
-    formState: { errors }
+    formState: { isSubmitting: formIsSubmitting }
   } = useForm<ImagenFormData>({
     resolver: zodResolver(imagenSchema),
     defaultValues: {
@@ -149,9 +150,11 @@ export default function ImagenModal({
                     </button>
                     {uploadedImageUrl && (
                       <div className="relative w-full h-48 mt-4 border border-gray-600 rounded-md overflow-hidden">
-                        <img
+                        <Image
                           src={uploadedImageUrl}
                           alt="Vista previa"
+                          width={400}
+                          height={300}
                           className="w-full h-full object-cover"
                         />
                       </div>

@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import TratamientoModal from '@/components/TratamientoModal';
 import ImagenModal from '@/components/ImagenModal';
+import Image from 'next/image';
 
 interface Tratamiento {
   fecha: string;
@@ -37,6 +38,20 @@ interface Paciente {
   imagenes: Imagen[];
 }
 
+interface TratamientoData {
+  _id: string;
+  fecha: Date;
+  procedimiento: string;
+  notas: string;
+}
+
+interface ImagenData {
+  _id: string;
+  url: string;
+  tipo: string;
+  descripcion?: string;
+}
+
 export default function DetallePacientePage() {
   const params = useParams();
   const [paciente, setPaciente] = useState<Paciente | null>(null);
@@ -64,11 +79,11 @@ export default function DetallePacientePage() {
     fetchPaciente();
   }, [params.id]);
 
-  const handleTratamientoAdded = async () => {
+  const handleTratamientoAdded = (tratamiento: TratamientoData) => {
     // Recargar los datos del paciente
-    const response = await fetch(`/api/pacientes/${params.id}`);
+    const response = fetch(`/api/pacientes/${params.id}`);
     if (response.ok) {
-      const data = await response.json();
+      const data = response.json();
       setPaciente(data);
     }
   };
@@ -83,11 +98,11 @@ export default function DetallePacientePage() {
     setSelectedTratamiento(null);
   };
 
-  const handleImagenAdded = async () => {
+  const handleImagenAdded = (imagen: ImagenData) => {
     // Recargar los datos del paciente
-    const response = await fetch(`/api/pacientes/${params.id}`);
+    const response = fetch(`/api/pacientes/${params.id}`);
     if (response.ok) {
-      const data = await response.json();
+      const data = response.json();
       setPaciente(data);
     }
   };
@@ -243,10 +258,12 @@ export default function DetallePacientePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {paciente.imagenes.map((imagen, index) => (
                   <div key={index} className="bg-gray-700 rounded-lg p-4">
-                    <img
+                    <Image
                       src={imagen.url}
                       alt={imagen.descripcion || 'Imagen dental'}
-                      className="w-full h-48 object-cover rounded-lg mb-2"
+                      width={200}
+                      height={200}
+                      className="w-full h-full object-cover rounded-lg mb-2"
                     />
                     <p className="text-sm text-gray-300">{imagen.tipo}</p>
                     <p className="text-xs text-gray-400">

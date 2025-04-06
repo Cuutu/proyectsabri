@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import Paciente from '@/models/Paciente';
 
+interface TratamientoResponse {
+  success: boolean;
+  data?: {
+    mensaje: string;
+    [key: string]: any;
+  };
+  error?: string;
+}
+
 export async function PUT(
   request: Request,
   { params }: { params: { id: string; tratamientoId: string } }

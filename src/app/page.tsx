@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Image from "next/image";
 import { connectDB } from '@/lib/mongodb';
 import Paciente from '@/models/Paciente';
@@ -130,7 +131,7 @@ export default async function HomePage() {
             Acciones Rápidas
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <a
+            <Link
               href="/pacientes/nuevo"
               className="group bg-gray-800 p-6 rounded-lg shadow-xl hover:bg-gray-700 transition-all flex items-center"
             >
@@ -143,8 +144,8 @@ export default async function HomePage() {
                   Registra un nuevo paciente en el sistema
                 </p>
               </div>
-            </a>
-            <a
+            </Link>
+            <Link
               href="/pacientes"
               className="group bg-gray-800 p-6 rounded-lg shadow-xl hover:bg-gray-700 transition-all flex items-center"
             >
@@ -157,7 +158,7 @@ export default async function HomePage() {
                   Accede a la lista completa de pacientes
                 </p>
               </div>
-            </a>
+            </Link>
           </div>
         </div>
       </div>
