@@ -266,23 +266,45 @@ export default function DetallePacientePage() {
               </button>
             </div>
             {paciente.imagenes.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {paciente.imagenes.map((imagen) => (
                   <div key={imagen._id} className="bg-gray-700 rounded-lg p-4">
-                    <Image
-                      src={imagen.url}
-                      alt={imagen.descripcion || 'Imagen dental'}
-                      width={200}
-                      height={200}
-                      className="w-full h-full object-cover rounded-lg mb-2"
-                    />
-                    <p className="text-sm text-gray-300">{imagen.tipo}</p>
-                    <p className="text-xs text-gray-400">
-                      {new Date(imagen.fecha).toLocaleDateString()}
-                    </p>
-                    {imagen.descripcion && (
-                      <p className="text-sm text-gray-300 mt-2">{imagen.descripcion}</p>
-                    )}
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-sm text-gray-300">{imagen.tipo}</p>
+                        <p className="text-xs text-gray-400">
+                          {new Date(imagen.fecha).toLocaleDateString()}
+                        </p>
+                        <a href={imagen.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 break-all">
+                          {imagen.url}
+                        </a>
+                        {imagen.descripcion && (
+                          <p className="text-sm text-gray-300 mt-2">{imagen.descripcion}</p>
+                        )}
+                      </div>
+                      <button
+                        onClick={async () => {
+                          if (confirm('¿Estás seguro de que deseas eliminar esta imagen?')) {
+                            try {
+                              const response = await fetch(`/api/pacientes/${params.id}/imagenes/${imagen._id}`, {
+                                method: 'DELETE',
+                              });
+                              if (response.ok) {
+                                handleImagenAdded();
+                              } else {
+                                alert('Error al eliminar la imagen');
+                              }
+                            } catch (error) {
+                              console.error('Error:', error);
+                              alert('Error al eliminar la imagen');
+                            }
+                          }
+                        }}
+                        className="text-red-400 hover:text-red-300 transition-colors"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

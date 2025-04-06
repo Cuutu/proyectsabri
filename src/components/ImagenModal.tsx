@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CldUploadWidget, CloudinaryUploadWidgetResults } from 'next-cloudinary';
-import Image from 'next/image';
 
 const imagenSchema = z.object({
   tipo: z.enum(['radiografia', 'fotografia', 'otro']),
@@ -39,6 +38,7 @@ export default function ImagenModal({
     handleSubmit,
     reset,
     formState: { isSubmitting },
+    setValue,
     watch
   } = useForm<ImagenFormData>({
     resolver: zodResolver(imagenSchema),
@@ -116,13 +116,18 @@ export default function ImagenModal({
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                URL de la Imagen (opcional)
+                URL de la Imagen
               </label>
               <input
                 type="url"
                 {...register('url')}
                 className="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 placeholder="https://ejemplo.com/imagen.jpg"
+                value={uploadedImageUrl || watch('url') || ''}
+                onChange={(e) => {
+                  setValue('url', e.target.value);
+                  setUploadedImageUrl('');
+                }}
               />
             </div>
 
@@ -133,11 +138,10 @@ export default function ImagenModal({
               <CldUploadWidget
                 uploadPreset="dental_images"
                 onSuccess={(result: CloudinaryUploadWidgetResults) => {
-                  console.log('Resultado completo:', result);
                   if (result.event === "success" && result.info && typeof result.info !== 'string') {
                     const url = result.info.secure_url;
-                    console.log('URL de imagen:', url);
                     setUploadedImageUrl(url);
+                    setValue('url', url);
                   }
                 }}
                 options={{
@@ -150,29 +154,16 @@ export default function ImagenModal({
                 }}
               >
                 {({ open }) => (
-                  <div className="space-y-2">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        open();
-                      }}
-                      className="w-full px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600"
-                    >
-                      Seleccionar Imagen
-                    </button>
-                    {uploadedImageUrl && (
-                      <div className="relative w-full h-48 mt-4 border border-gray-600 rounded-md overflow-hidden">
-                        <Image
-                          src={uploadedImageUrl}
-                          alt="Vista previa"
-                          width={400}
-                          height={300}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      open();
+                    }}
+                    className="w-full px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600"
+                  >
+                    Seleccionar Imagen
+                  </button>
                 )}
               </CldUploadWidget>
             </div>
@@ -187,7 +178,7 @@ export default function ImagenModal({
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || (!uploadedImageUrl && !watch('url'))}
+                disabled={isSubmitting}
                 className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-blue-400 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Guardando...' : 'Guardar Imagen'}
