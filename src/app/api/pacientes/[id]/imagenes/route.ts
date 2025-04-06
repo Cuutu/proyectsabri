@@ -2,21 +2,15 @@ import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import Paciente from '@/models/Paciente';
 
-type Props = {
-  params: {
-    id: string;
-  };
-};
-
 export async function POST(
   request: Request,
-  props: Props
+  { params }: { params: { id: string } }
 ) {
   try {
     await connectDB();
     const data = await request.json();
 
-    const paciente = await Paciente.findById(props.params.id);
+    const paciente = await Paciente.findById(params.id);
     if (!paciente) {
       return NextResponse.json(
         { error: 'Paciente no encontrado' },
