@@ -38,7 +38,8 @@ export default function ImagenModal({
     register,
     handleSubmit,
     reset,
-    formState: { isSubmitting }
+    formState: { isSubmitting },
+    watch
   } = useForm<ImagenFormData>({
     resolver: zodResolver(imagenSchema),
     defaultValues: {
@@ -186,7 +187,7 @@ export default function ImagenModal({
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || !uploadedImageUrl}
+                disabled={isSubmitting || (!uploadedImageUrl && !watch('url'))}
                 className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-blue-400 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Guardando...' : 'Guardar Imagen'}
