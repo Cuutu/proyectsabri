@@ -4,13 +4,13 @@ import Paciente from '@/models/Paciente';
 
 export async function POST(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
     await connectDB();
     const data = await request.json();
-    const paciente = await Paciente.findById(context.params.id);
 
+    const paciente = await Paciente.findById(params.id);
     if (!paciente) {
       return NextResponse.json(
         { error: 'Paciente no encontrado' },
@@ -18,16 +18,21 @@ export async function POST(
       );
     }
 
-    // Asegúrate de que el array de imágenes exista
+    // Agregar la imagen al paciente
     if (!paciente.imagenes) {
       paciente.imagenes = [];
     }
 
-    // Agregar la nueva imagen
-    paciente.imagenes.push(data);
+    paciente.imagenes.push({
+      url: data.url,
+      tipo: data.tipo,
+      descripcion: data.descripcion,
+      fecha: new Date()
+    });
+
     await paciente.save();
 
-    return NextResponse.json(paciente.imagenes);
+    return NextResponse.json(paciente.imagenes[paciente.imagenes.length - 1]);
   } catch (error) {
     console.error('Error al agregar imagen:', error);
     return NextResponse.json(
