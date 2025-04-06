@@ -1,0 +1,286 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
+import TratamientoModal from '@/components/TratamientoModal';
+import ImagenModal from '@/components/ImagenModal';
+
+interface Tratamiento {
+  fecha: string;
+  procedimiento: string;
+  notas: string;
+  diente?: number;
+  estado: 'pendiente' | 'en-proceso' | 'completado';
+}
+
+interface Imagen {
+  fecha: string;
+  tipo: 'radiografia' | 'fotografia' | 'otro';
+  url: string;
+  descripcion?: string;
+}
+
+interface Paciente {
+  _id: string;
+  nombre: string;
+  apellido: string;
+  fechaNacimiento: string;
+  dni: string;
+  telefono: string;
+  email?: string;
+  historiaClinica: {
+    antecedentes: string;
+    alergias: string[];
+    tratamientos: Tratamiento[];
+  };
+  imagenes: Imagen[];
+}
+
+export default function DetallePacientePage() {
+  const params = useParams();
+  const [paciente, setPaciente] = useState<Paciente | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTratamiento, setSelectedTratamiento] = useState<any>(null);
+  const [isImagenModalOpen, setIsImagenModalOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchPaciente = async () => {
+      try {
+        const response = await fetch(`/api/pacientes/${params.id}`);
+        if (!response.ok) throw new Error('Error al cargar el paciente');
+        const data = await response.json();
+        setPaciente(data);
+      } catch (err) {
+        setError('Error al cargar los datos del paciente');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPaciente();
+  }, [params.id]);
+
+  const handleTratamientoAdded = async () => {
+    // Recargar los datos del paciente
+    const response = await fetch(`/api/pacientes/${params.id}`);
+    if (response.ok) {
+      const data = await response.json();
+      setPaciente(data);
+    }
+  };
+
+  const handleEditTratamiento = (tratamiento: any) => {
+    setSelectedTratamiento(tratamiento);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedTratamiento(null);
+  };
+
+  const handleImagenAdded = async () => {
+    // Recargar los datos del paciente
+    const response = await fetch(`/api/pacientes/${params.id}`);
+    if (response.ok) {
+      const data = await response.json();
+      setPaciente(data);
+    }
+  };
+
+  if (loading) return <div className="text-white p-4">Cargando...</div>;
+  if (error) return <div className="text-red-400 p-4">{error}</div>;
+  if (!paciente) return <div className="text-white p-4">Paciente no encontrado</div>;
+
+  return (
+    <div className="min-h-screen p-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-white">
+            {paciente.nombre} {paciente.apellido}
+          </h1>
+          <div className="space-x-4">
+            <Link
+              href={`/pacientes/${paciente._id}/editar`}
+              className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
+            >
+              Editar Paciente
+            </Link>
+            <Link
+              href="/pacientes"
+              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+            >
+              Volver
+            </Link>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Información Personal */}
+          <div className="bg-gray-800 rounded-lg p-6 shadow-xl">
+            <h2 className="text-xl font-semibold text-white mb-4">Información Personal</h2>
+            <div className="space-y-3">
+              <p className="text-gray-300">
+                <span className="font-medium">DNI:</span> {paciente.dni}
+              </p>
+              <p className="text-gray-300">
+                <span className="font-medium">Fecha de Nacimiento:</span>{' '}
+                {new Date(paciente.fechaNacimiento).toLocaleDateString()}
+              </p>
+              <p className="text-gray-300">
+                <span className="font-medium">Teléfono:</span> {paciente.telefono}
+              </p>
+              <p className="text-gray-300">
+                <span className="font-medium">Email:</span> {paciente.email || 'No especificado'}
+              </p>
+            </div>
+          </div>
+
+          {/* Historia Clínica */}
+          <div className="bg-gray-800 rounded-lg p-6 shadow-xl">
+            <h2 className="text-xl font-semibold text-white mb-4">Historia Clínica</h2>
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-medium text-white mb-2">Antecedentes</h3>
+                <p className="text-gray-300">
+                  {paciente.historiaClinica.antecedentes || 'Sin antecedentes registrados'}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-lg font-medium text-white mb-2">Alergias</h3>
+                {paciente.historiaClinica.alergias.length > 0 ? (
+                  <ul className="list-disc list-inside text-gray-300">
+                    {paciente.historiaClinica.alergias.map((alergia, index) => (
+                      <li key={index}>{alergia}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-300">Sin alergias registradas</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Tratamientos */}
+          <div className="bg-gray-800 rounded-lg p-6 shadow-xl lg:col-span-2">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-white">Tratamientos</h2>
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                onClick={() => setIsModalOpen(true)}
+              >
+                Nuevo Tratamiento
+              </button>
+            </div>
+            {paciente.historiaClinica.tratamientos.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-700">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-gray-300">Fecha</th>
+                      <th className="px-4 py-2 text-left text-gray-300">Procedimiento</th>
+                      <th className="px-4 py-2 text-left text-gray-300">Estado</th>
+                      <th className="px-4 py-2 text-left text-gray-300">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                    {paciente.historiaClinica.tratamientos.map((tratamiento: any) => (
+                      <tr key={tratamiento._id} className="hover:bg-gray-700">
+                        <td className="px-4 py-2 text-gray-300">
+                          {new Date(tratamiento.fecha).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-2 text-gray-300">
+                          {tratamiento.procedimiento}
+                        </td>
+                        <td className="px-4 py-2">
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            tratamiento.estado === 'completado' ? 'bg-green-500' :
+                            tratamiento.estado === 'en-proceso' ? 'bg-yellow-500' :
+                            'bg-red-500'
+                          } text-white`}>
+                            {tratamiento.estado}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 space-x-3">
+                          <button
+                            onClick={() => handleEditTratamiento(tratamiento)}
+                            className="text-blue-400 hover:text-blue-300 transition-colors"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            className="text-red-400 hover:text-red-300 transition-colors"
+                          >
+                            Eliminar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-gray-300">No hay tratamientos registrados</p>
+            )}
+          </div>
+
+          {/* Imágenes */}
+          <div className="bg-gray-800 rounded-lg p-6 shadow-xl lg:col-span-2">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-white">Imágenes</h2>
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                onClick={() => setIsImagenModalOpen(true)}
+              >
+                Subir Imagen
+              </button>
+            </div>
+            {paciente.imagenes.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {paciente.imagenes.map((imagen, index) => (
+                  <div key={index} className="bg-gray-700 rounded-lg p-4">
+                    <img
+                      src={imagen.url}
+                      alt={imagen.descripcion || 'Imagen dental'}
+                      className="w-full h-48 object-cover rounded-lg mb-2"
+                    />
+                    <p className="text-sm text-gray-300">{imagen.tipo}</p>
+                    <p className="text-xs text-gray-400">
+                      {new Date(imagen.fecha).toLocaleDateString()}
+                    </p>
+                    {imagen.descripcion && (
+                      <p className="text-sm text-gray-300 mt-2">{imagen.descripcion}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-300">No hay imágenes registradas</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Modal de Tratamiento */}
+      <TratamientoModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        pacienteId={params.id}
+        onTratamientoAdded={handleTratamientoAdded}
+        tratamientoToEdit={selectedTratamiento}
+      />
+
+      {/* Modal de Imagen */}
+      <ImagenModal
+        isOpen={isImagenModalOpen}
+        onClose={() => setIsImagenModalOpen(false)}
+        pacienteId={params.id as string}
+        onImagenAdded={handleImagenAdded}
+      />
+    </div>
+  );
+} 

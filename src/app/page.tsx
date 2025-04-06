@@ -1,102 +1,170 @@
 import Image from "next/image";
+import { connectDB } from '@/lib/mongodb';
+import Paciente from '@/models/Paciente';
 
-export default function Home() {
+async function obtenerEstadisticas() {
+  await connectDB();
+  
+  const totalPacientes = await Paciente.countDocuments();
+  
+  const totalTratamientos = await Paciente.aggregate([
+    { $unwind: "$historiaClinica.tratamientos" },
+    { $group: { _id: null, total: { $sum: 1 } } }
+  ]).then(result => result[0]?.total || 0);
+  
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  const tratamientosHoy = await Paciente.aggregate([
+    { $unwind: "$historiaClinica.tratamientos" },
+    { 
+      $match: { 
+        "historiaClinica.tratamientos.fecha": { 
+          $gte: hoy,
+          $lt: new Date(hoy.getTime() + 24 * 60 * 60 * 1000)
+        } 
+      }
+    },
+    { $group: { _id: null, total: { $sum: 1 } } }
+  ]).then(result => result[0]?.total || 0);
+  
+  const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  const tratamientosMes = await Paciente.aggregate([
+    { $unwind: "$historiaClinica.tratamientos" },
+    { 
+      $match: { 
+        "historiaClinica.tratamientos.fecha": { 
+          $gte: inicioMes,
+          $lt: new Date(hoy.getFullYear(), hoy.getMonth() + 1, 1)
+        } 
+      }
+    },
+    { $group: { _id: null, total: { $sum: 1 } } }
+  ]).then(result => result[0]?.total || 0);
+
+  return {
+    totalPacientes,
+    totalTratamientos,
+    tratamientosMes,
+    tratamientosHoy
+  };
+}
+
+export default async function HomePage() {
+  const stats = await obtenerEstadisticas();
+  
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
+      {/* Hero Section */}
+      <div className="flex flex-col items-center justify-center p-4 min-h-[60vh]">
+        <div className="text-center space-y-8 max-w-4xl mx-auto animate-fade-in">
+          <h1 className="text-5xl font-bold text-white mb-2">
+            Bienvenida Sabrina
+          </h1>
+          <p className="text-2xl text-blue-400">
+            a tu Base de Datos de Pacientes
+          </p>
+          
+          {/* Estadísticas */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+            <div className="bg-gray-800/50 p-4 rounded-lg">
+              <div className="text-3xl font-bold text-blue-400">{stats.totalPacientes}</div>
+              <div className="text-gray-400">Pacientes</div>
+            </div>
+            <div className="bg-gray-800/50 p-4 rounded-lg">
+              <div className="text-3xl font-bold text-blue-400">{stats.totalTratamientos}</div>
+              <div className="text-gray-400">Tratamientos</div>
+            </div>
+            <div className="bg-gray-800/50 p-4 rounded-lg">
+              <div className="text-3xl font-bold text-blue-400">{stats.tratamientosMes}</div>
+              <div className="text-gray-400">Este Mes</div>
+            </div>
+            <div className="bg-gray-800/50 p-4 rounded-lg">
+              <div className="text-3xl font-bold text-blue-400">{stats.tratamientosHoy}</div>
+              <div className="text-gray-400">Hoy</div>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </div>
+
+      {/* Características */}
+      <div className="py-16 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-gray-800 p-6 rounded-lg shadow-xl hover:transform hover:scale-105 transition-all">
+              <div className="text-blue-400 text-4xl mb-4">📊</div>
+              <h3 className="text-xl font-semibold text-white mb-2">
+                Gestión Simple
+              </h3>
+              <p className="text-gray-300">
+                Administra los datos de tus pacientes de manera fácil y eficiente
+              </p>
+            </div>
+
+            <div className="bg-gray-800 p-6 rounded-lg shadow-xl hover:transform hover:scale-105 transition-all">
+              <div className="text-blue-400 text-4xl mb-4">🦷</div>
+              <h3 className="text-xl font-semibold text-white mb-2">
+                Historia Clínica
+              </h3>
+              <p className="text-gray-300">
+                Mantén un registro detallado de tratamientos y evolución
+              </p>
+            </div>
+
+            <div className="bg-gray-800 p-6 rounded-lg shadow-xl hover:transform hover:scale-105 transition-all">
+              <div className="text-blue-400 text-4xl mb-4">📸</div>
+              <h3 className="text-xl font-semibold text-white mb-2">
+                Imágenes Dentales
+              </h3>
+              <p className="text-gray-300">
+                Almacena y organiza radiografías y fotografías clínicas
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Acciones Rápidas */}
+      <div className="py-16 px-4 bg-gray-800/50">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-white mb-8 text-center">
+            Acciones Rápidas
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <a
+              href="/pacientes/nuevo"
+              className="group bg-gray-800 p-6 rounded-lg shadow-xl hover:bg-gray-700 transition-all flex items-center"
+            >
+              <div className="text-4xl mr-4">👤</div>
+              <div>
+                <h3 className="text-xl font-semibold text-white mb-1">
+                  Nuevo Paciente
+                </h3>
+                <p className="text-gray-400">
+                  Registra un nuevo paciente en el sistema
+                </p>
+              </div>
+            </a>
+            <a
+              href="/pacientes"
+              className="group bg-gray-800 p-6 rounded-lg shadow-xl hover:bg-gray-700 transition-all flex items-center"
+            >
+              <div className="text-4xl mr-4">🔍</div>
+              <div>
+                <h3 className="text-xl font-semibold text-white mb-1">
+                  Ver Pacientes
+                </h3>
+                <p className="text-gray-400">
+                  Accede a la lista completa de pacientes
+                </p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="py-8 px-4 text-center text-gray-400">
+        <p>Sistema de Gestión Dental © 2024</p>
       </footer>
     </div>
   );
