@@ -9,9 +9,6 @@ import { z } from 'zod';
 const pacienteSchema = z.object({
   nombre: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   apellido: z.string().min(2, 'El apellido debe tener al menos 2 caracteres'),
-  fechaNacimiento: z.string().refine((date) => !isNaN(Date.parse(date)), {
-    message: 'Fecha inválida'
-  }),
   dni: z.string().min(7, 'DNI inválido'),
   telefono: z.string().min(8, 'Teléfono inválido'),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
@@ -43,14 +40,8 @@ export default function EditarPacientePage() {
         if (!response.ok) throw new Error('Error al cargar el paciente');
         const data = await response.json();
         
-        // Formatear la fecha para el input date
-        const fechaNacimiento = new Date(data.fechaNacimiento)
-          .toISOString()
-          .split('T')[0];
-
         reset({
           ...data,
-          fechaNacimiento,
           antecedentes: data.historiaClinica?.antecedentes || '',
           alergias: data.historiaClinica?.alergias?.join(', ') || ''
         });
@@ -126,20 +117,6 @@ export default function EditarPacientePage() {
                 />
                 {errors.apellido && (
                   <p className="mt-1 text-sm text-red-400">{errors.apellido.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Fecha de Nacimiento
-                </label>
-                <input
-                  type="date"
-                  {...register('fechaNacimiento')}
-                  className="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                />
-                {errors.fechaNacimiento && (
-                  <p className="mt-1 text-sm text-red-400">{errors.fechaNacimiento.message}</p>
                 )}
               </div>
 

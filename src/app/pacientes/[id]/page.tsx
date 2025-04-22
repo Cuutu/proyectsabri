@@ -27,16 +27,15 @@ interface Paciente {
   _id: string;
   nombre: string;
   apellido: string;
-  fechaNacimiento: string;
   dni: string;
   telefono: string;
   email?: string;
-  historiaClinica: {
-    antecedentes: string;
-    alergias: string[];
-    tratamientos: Tratamiento[];
+  historiaClinica?: {
+    antecedentes?: string;
+    alergias?: string[];
   };
-  imagenes: Imagen[];
+  tratamientos?: Tratamiento[];
+  imagenes?: Imagen[];
 }
 
 // Definir un tipo para el tratamiento que espera el modal
@@ -168,24 +167,17 @@ export default function DetallePacientePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Información Personal */}
-          <div className="bg-gray-800 rounded-lg p-6 shadow-xl">
-            <h2 className="text-xl font-semibold text-white mb-4">Información Personal</h2>
-            <div className="space-y-3">
-              <p className="text-gray-300">
-                <span className="font-medium">DNI:</span> {paciente.dni}
-              </p>
-              <p className="text-gray-300">
-                <span className="font-medium">Fecha de Nacimiento:</span>{' '}
-                {new Date(paciente.fechaNacimiento).toLocaleDateString()}
-              </p>
-              <p className="text-gray-300">
-                <span className="font-medium">Teléfono:</span> {paciente.telefono}
-              </p>
-              <p className="text-gray-300">
-                <span className="font-medium">Email:</span> {paciente.email || 'No especificado'}
-              </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-300 mb-2">Información Personal</h3>
+            <div className="bg-gray-800 p-4 rounded-lg">
+              <p className="text-gray-300"><span className="font-medium">Nombre:</span> {paciente.nombre}</p>
+              <p className="text-gray-300"><span className="font-medium">Apellido:</span> {paciente.apellido}</p>
+              <p className="text-gray-300"><span className="font-medium">DNI:</span> {paciente.dni}</p>
+              <p className="text-gray-300"><span className="font-medium">Teléfono:</span> {paciente.telefono}</p>
+              {paciente.email && (
+                <p className="text-gray-300"><span className="font-medium">Email:</span> {paciente.email}</p>
+              )}
             </div>
           </div>
 
@@ -196,12 +188,12 @@ export default function DetallePacientePage() {
               <div>
                 <h3 className="text-lg font-medium text-white mb-2">Antecedentes</h3>
                 <p className="text-gray-300">
-                  {paciente.historiaClinica.antecedentes || 'Sin antecedentes registrados'}
+                  {paciente.historiaClinica?.antecedentes || 'Sin antecedentes registrados'}
                 </p>
               </div>
               <div>
                 <h3 className="text-lg font-medium text-white mb-2">Alergias</h3>
-                {paciente.historiaClinica.alergias.length > 0 ? (
+                {paciente.historiaClinica?.alergias && paciente.historiaClinica.alergias.length > 0 ? (
                   <ul className="list-disc list-inside text-gray-300">
                     {paciente.historiaClinica.alergias.map((alergia, index) => (
                       <li key={index}>{alergia}</li>
@@ -213,128 +205,128 @@ export default function DetallePacientePage() {
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Tratamientos */}
-          <div className="bg-gray-800 rounded-lg p-6 shadow-xl lg:col-span-2">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-white">Tratamientos</h2>
-              <button
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                onClick={() => setIsModalOpen(true)}
-              >
-                Nuevo Tratamiento
-              </button>
-            </div>
-            {paciente.historiaClinica.tratamientos.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-700">
-                    <tr>
-                      <th className="px-4 py-2 text-left text-gray-300">Fecha</th>
-                      <th className="px-4 py-2 text-left text-gray-300">Procedimiento</th>
-                      <th className="px-4 py-2 text-left text-gray-300">Estado</th>
-                      <th className="px-4 py-2 text-left text-gray-300">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-700">
-                    {paciente.historiaClinica.tratamientos.map((tratamiento) => (
-                      <tr key={tratamiento._id} className="hover:bg-gray-700">
-                        <td className="px-4 py-2 text-gray-300">
-                          {new Date(tratamiento.fecha).toLocaleDateString()}
-                        </td>
-                        <td className="px-4 py-2 text-gray-300">
-                          {tratamiento.procedimiento}
-                        </td>
-                        <td className="px-4 py-2">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            tratamiento.estado === 'completado' ? 'bg-green-500' :
-                            tratamiento.estado === 'en-proceso' ? 'bg-yellow-500' :
-                            'bg-red-500'
-                          } text-white`}>
-                            {tratamiento.estado}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2 space-x-3">
-                          <button
-                            onClick={() => handleEditTratamiento(tratamiento)}
-                            className="text-blue-400 hover:text-blue-300 transition-colors"
-                          >
-                            Editar
-                          </button>
-                          <button
-                            className="text-red-400 hover:text-red-300 transition-colors"
-                          >
-                            Eliminar
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-gray-300">No hay tratamientos registrados</p>
-            )}
+        {/* Tratamientos */}
+        <div className="bg-gray-800 rounded-lg p-6 shadow-xl lg:col-span-2">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-white">Tratamientos</h2>
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+              onClick={() => setIsModalOpen(true)}
+            >
+              Nuevo Tratamiento
+            </button>
           </div>
-
-          {/* Imágenes */}
-          <div className="bg-gray-800 rounded-lg p-6 shadow-xl lg:col-span-2">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-white">Imágenes</h2>
-              <button
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                onClick={() => setIsImagenModalOpen(true)}
-              >
-                Subir Imagen
-              </button>
+          {paciente.tratamientos && paciente.tratamientos.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-700">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-gray-300">Fecha</th>
+                    <th className="px-4 py-2 text-left text-gray-300">Procedimiento</th>
+                    <th className="px-4 py-2 text-left text-gray-300">Estado</th>
+                    <th className="px-4 py-2 text-left text-gray-300">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-700">
+                  {paciente.tratamientos.map((tratamiento) => (
+                    <tr key={tratamiento._id} className="hover:bg-gray-700">
+                      <td className="px-4 py-2 text-gray-300">
+                        {new Date(tratamiento.fecha).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-2 text-gray-300">
+                        {tratamiento.procedimiento}
+                      </td>
+                      <td className="px-4 py-2">
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          tratamiento.estado === 'completado' ? 'bg-green-500' :
+                          tratamiento.estado === 'en-proceso' ? 'bg-yellow-500' :
+                          'bg-red-500'
+                        } text-white`}>
+                          {tratamiento.estado}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 space-x-3">
+                        <button
+                          onClick={() => handleEditTratamiento(tratamiento)}
+                          className="text-blue-400 hover:text-blue-300 transition-colors"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          className="text-red-400 hover:text-red-300 transition-colors"
+                        >
+                          Eliminar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            {paciente.imagenes.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4">
-                {paciente.imagenes.map((imagen) => (
-                  <div key={imagen._id} className="bg-gray-700 rounded-lg p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="text-sm text-gray-300">{imagen.tipo}</p>
-                        <p className="text-xs text-gray-400">
-                          {new Date(imagen.fecha).toLocaleDateString()}
-                        </p>
-                        <a href={imagen.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 break-all">
-                          {imagen.url}
-                        </a>
-                        {imagen.descripcion && (
-                          <p className="text-sm text-gray-300 mt-2">{imagen.descripcion}</p>
-                        )}
-                      </div>
-                      <button
-                        onClick={async () => {
-                          if (confirm('¿Estás seguro de que deseas eliminar esta imagen?')) {
-                            try {
-                              const response = await fetch(`/api/pacientes/${params.id}/imagenes/${imagen._id}`, {
-                                method: 'DELETE',
-                              });
-                              if (response.ok) {
-                                handleImagenAdded();
-                              } else {
-                                alert('Error al eliminar la imagen');
-                              }
-                            } catch (error) {
-                              console.error('Error:', error);
+          ) : (
+            <p className="text-gray-300">No hay tratamientos registrados</p>
+          )}
+        </div>
+
+        {/* Imágenes */}
+        <div className="bg-gray-800 rounded-lg p-6 shadow-xl lg:col-span-2">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-white">Imágenes</h2>
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+              onClick={() => setIsImagenModalOpen(true)}
+            >
+              Subir Imagen
+            </button>
+          </div>
+          {paciente.imagenes && paciente.imagenes.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4">
+              {paciente.imagenes.map((imagen) => (
+                <div key={imagen._id} className="bg-gray-700 rounded-lg p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm text-gray-300">{imagen.tipo}</p>
+                      <p className="text-xs text-gray-400">
+                        {new Date(imagen.fecha).toLocaleDateString()}
+                      </p>
+                      <a href={imagen.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 break-all">
+                        {imagen.url}
+                      </a>
+                      {imagen.descripcion && (
+                        <p className="text-sm text-gray-300 mt-2">{imagen.descripcion}</p>
+                      )}
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (confirm('¿Estás seguro de que deseas eliminar esta imagen?')) {
+                          try {
+                            const response = await fetch(`/api/pacientes/${params.id}/imagenes/${imagen._id}`, {
+                              method: 'DELETE',
+                            });
+                            if (response.ok) {
+                              handleImagenAdded();
+                            } else {
                               alert('Error al eliminar la imagen');
                             }
+                          } catch (error) {
+                            console.error('Error:', error);
+                            alert('Error al eliminar la imagen');
                           }
-                        }}
-                        className="text-red-400 hover:text-red-300 transition-colors"
-                      >
-                        Eliminar
-                      </button>
-                    </div>
+                        }
+                      }}
+                      className="text-red-400 hover:text-red-300 transition-colors"
+                    >
+                      Eliminar
+                    </button>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-300">No hay imágenes registradas</p>
-            )}
-          </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-300">No hay imágenes registradas</p>
+          )}
         </div>
       </div>
 

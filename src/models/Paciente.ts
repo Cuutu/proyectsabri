@@ -11,10 +11,6 @@ const PacienteSchema = new mongoose.Schema({
     required: [true, 'El apellido es requerido'],
     trim: true
   },
-  fechaNacimiento: {
-    type: Date,
-    required: [true, 'La fecha de nacimiento es requerida']
-  },
   dni: {
     type: String,
     required: [true, 'El DNI es requerido'],
