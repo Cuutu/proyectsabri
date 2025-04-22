@@ -17,21 +17,21 @@ export default function PacientesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const fetchPacientes = async () => {
-      try {
-        const response = await fetch('/api/pacientes');
-        if (!response.ok) throw new Error('Error al cargar los pacientes');
-        const data = await response.json();
-        setPacientes(data);
-      } catch (err) {
-        setError('Error al cargar los pacientes');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchPacientes = async () => {
+    try {
+      const response = await fetch('/api/pacientes');
+      if (!response.ok) throw new Error('Error al cargar los pacientes');
+      const data = await response.json();
+      setPacientes(data);
+    } catch (err) {
+      setError('Error al cargar los pacientes');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchPacientes();
   }, []);
 
@@ -91,19 +91,42 @@ export default function PacientesPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-gray-300">
                       {paciente.email || '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm space-x-3">
+                    <td className="px-4 py-2 text-right">
                       <Link
                         href={`/pacientes/${paciente._id}`}
-                        className="text-blue-400 hover:text-blue-300 transition-colors"
+                        className="text-blue-400 hover:text-blue-300 transition-colors mr-4"
                       >
                         Ver
                       </Link>
                       <Link
                         href={`/pacientes/${paciente._id}/editar`}
-                        className="text-green-400 hover:text-green-300 transition-colors"
+                        className="text-green-400 hover:text-green-300 transition-colors mr-4"
                       >
                         Editar
                       </Link>
+                      <button
+                        onClick={async () => {
+                          if (confirm('¿Estás seguro de que deseas eliminar este paciente? Esta acción no se puede deshacer.')) {
+                            try {
+                              const response = await fetch(`/api/pacientes/${paciente._id}`, {
+                                method: 'DELETE',
+                              });
+                              if (response.ok) {
+                                // Recargar la lista de pacientes
+                                fetchPacientes();
+                              } else {
+                                alert('Error al eliminar el paciente');
+                              }
+                            } catch (error) {
+                              console.error('Error:', error);
+                              alert('Error al eliminar el paciente');
+                            }
+                          }
+                        }}
+                        className="text-red-400 hover:text-red-300 transition-colors"
+                      >
+                        Borrar
+                      </button>
                     </td>
                   </tr>
                 ))}
