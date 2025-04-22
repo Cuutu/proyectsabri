@@ -9,9 +9,10 @@ import Image from 'next/image';
 
 interface Tratamiento {
   _id: string;
-  fecha: Date;
+  fecha: string | Date;
   procedimiento: string;
-  notas: string;
+  notas?: string;
+  diente?: number;
   estado: 'pendiente' | 'en-proceso' | 'completado';
 }
 
@@ -33,6 +34,8 @@ interface Paciente {
   historiaClinica?: {
     antecedentes?: string;
     alergias?: string[];
+    fechaCreacion?: Date;
+    tratamientos?: Tratamiento[];
   };
   tratamientos?: Tratamiento[];
   imagenes?: Imagen[];
@@ -64,10 +67,11 @@ export default function DetallePacientePage() {
         const response = await fetch(`/api/pacientes/${params.id}`);
         if (!response.ok) throw new Error('Error al cargar el paciente');
         const data = await response.json();
+        console.log('Datos del paciente cargados:', data);
         setPaciente(data);
       } catch (err) {
+        console.error('Error al cargar los datos del paciente:', err);
         setError('Error al cargar los datos del paciente');
-        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -208,7 +212,7 @@ export default function DetallePacientePage() {
         </div>
 
         {/* Tratamientos */}
-        <div className="bg-gray-800 rounded-lg p-6 shadow-xl lg:col-span-2">
+        <div className="bg-gray-800 rounded-lg p-6 shadow-xl mt-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-white">Tratamientos</h2>
             <button
@@ -221,21 +225,26 @@ export default function DetallePacientePage() {
           {paciente.tratamientos && paciente.tratamientos.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead>
+                <thead className="bg-gray-700">
                   <tr>
                     <th className="px-4 py-2 text-left text-gray-300">Fecha</th>
                     <th className="px-4 py-2 text-left text-gray-300">Procedimiento</th>
+                    <th className="px-4 py-2 text-left text-gray-300">Notas</th>
+                    <th className="px-4 py-2 text-left text-gray-300">Estado</th>
                     <th className="px-4 py-2 text-left text-gray-300">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-700">
                   {paciente.tratamientos.map((tratamiento) => (
-                    <tr key={tratamiento._id}>
+                    <tr key={tratamiento._id} className="hover:bg-gray-700">
                       <td className="px-4 py-2 text-gray-300">
                         {new Date(tratamiento.fecha).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-2 text-gray-300">
                         {tratamiento.procedimiento}
+                      </td>
+                      <td className="px-4 py-2 text-gray-300">
+                        {tratamiento.notas || '-'}
                       </td>
                       <td className="px-4 py-2">
                         <span className={`px-2 py-1 rounded-full text-xs ${
