@@ -31,14 +31,16 @@ interface Paciente {
   dni: string;
   telefono: string;
   email?: string;
+  fechaNacimiento?: string;
   historiaClinica?: {
     antecedentes?: string;
     alergias?: string[];
-    fechaCreacion?: Date;
+    fechaCreacion?: string;
     tratamientos?: Tratamiento[];
   };
-  tratamientos?: Tratamiento[];
   imagenes?: Imagen[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Definir un tipo para el tratamiento que espera el modal
@@ -222,7 +224,7 @@ export default function DetallePacientePage() {
               Nuevo Tratamiento
             </button>
           </div>
-          {paciente.tratamientos && paciente.tratamientos.length > 0 ? (
+          {paciente.historiaClinica?.tratamientos && paciente.historiaClinica.tratamientos.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-700">
@@ -235,7 +237,7 @@ export default function DetallePacientePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-700">
-                  {paciente.tratamientos.map((tratamiento) => (
+                  {paciente.historiaClinica.tratamientos.map((tratamiento) => (
                     <tr key={tratamiento._id} className="hover:bg-gray-700">
                       <td className="px-4 py-2 text-gray-300">
                         {new Date(tratamiento.fecha).toLocaleDateString()}
