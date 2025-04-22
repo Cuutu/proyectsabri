@@ -221,17 +221,16 @@ export default function DetallePacientePage() {
           {paciente.tratamientos && paciente.tratamientos.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-700">
+                <thead>
                   <tr>
                     <th className="px-4 py-2 text-left text-gray-300">Fecha</th>
                     <th className="px-4 py-2 text-left text-gray-300">Procedimiento</th>
-                    <th className="px-4 py-2 text-left text-gray-300">Estado</th>
                     <th className="px-4 py-2 text-left text-gray-300">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-700">
                   {paciente.tratamientos.map((tratamiento) => (
-                    <tr key={tratamiento._id} className="hover:bg-gray-700">
+                    <tr key={tratamiento._id}>
                       <td className="px-4 py-2 text-gray-300">
                         {new Date(tratamiento.fecha).toLocaleDateString()}
                       </td>
@@ -247,7 +246,7 @@ export default function DetallePacientePage() {
                           {tratamiento.estado}
                         </span>
                       </td>
-                      <td className="px-4 py-2 space-x-3">
+                      <td className="px-4 py-2 space-x-2">
                         <button
                           onClick={() => handleEditTratamiento(tratamiento)}
                           className="text-blue-400 hover:text-blue-300 transition-colors"
@@ -255,6 +254,23 @@ export default function DetallePacientePage() {
                           Editar
                         </button>
                         <button
+                          onClick={async () => {
+                            if (confirm('¿Estás seguro de que deseas eliminar este tratamiento?')) {
+                              try {
+                                const response = await fetch(`/api/pacientes/${params.id}/tratamientos/${tratamiento._id}`, {
+                                  method: 'DELETE',
+                                });
+                                if (response.ok) {
+                                  handleTratamientoAdded();
+                                } else {
+                                  alert('Error al eliminar el tratamiento');
+                                }
+                              } catch (error) {
+                                console.error('Error:', error);
+                                alert('Error al eliminar el tratamiento');
+                              }
+                            }
+                          }}
                           className="text-red-400 hover:text-red-300 transition-colors"
                         >
                           Eliminar
