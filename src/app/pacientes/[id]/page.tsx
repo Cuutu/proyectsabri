@@ -178,6 +178,9 @@ export default function DetallePacientePage() {
           <div>
             <h3 className="text-lg font-semibold text-gray-300 mb-2">Información Personal</h3>
             <div className="bg-gray-800 p-4 rounded-lg">
+              {paciente.numeroHistoriaClinica && (
+                <p className="text-gray-300 mb-2"><span className="font-medium">HC Nº:</span> {paciente.numeroHistoriaClinica}</p>
+              )}
               <p className="text-gray-300"><span className="font-medium">Nombre:</span> {paciente.nombre}</p>
               <p className="text-gray-300"><span className="font-medium">Apellido:</span> {paciente.apellido}</p>
               <p className="text-gray-300"><span className="font-medium">DNI:</span> {paciente.dni}</p>
