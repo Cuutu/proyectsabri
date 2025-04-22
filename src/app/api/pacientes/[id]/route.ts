@@ -34,10 +34,9 @@ export async function PUT(
 ) {
   try {
     await connectDB();
-    const { id } = params;
     const data = await request.json();
 
-    const paciente = await Paciente.findById(id);
+    const paciente = await Paciente.findById(params.id);
     if (!paciente) {
       return NextResponse.json(
         { error: 'Paciente no encontrado' },
@@ -45,31 +44,45 @@ export async function PUT(
       );
     }
 
-    // Actualizar los campos básicos
-    paciente.nombre = data.nombre;
-    paciente.apellido = data.apellido;
-    paciente.fechaNacimiento = data.fechaNacimiento;
-    paciente.dni = data.dni;
-    paciente.telefono = data.telefono;
-    paciente.email = data.email;
-
-    // Actualizar historia clínica
-    if (!paciente.historiaClinica) {
-      paciente.historiaClinica = {
-        antecedentes: '',
-        alergias: [],
-        tratamientos: []
-      };
+    // Verificar si el número de historia clínica ya existe en otro paciente
+    if (data.numeroHistoriaClinica !== paciente.numeroHistoriaClinica) {
+      const existingPaciente = await Paciente.findOne({
+        numeroHistoriaClinica: data.numeroHistoriaClinica,
+        _id: { $ne: params.id }
+      });
+      if (existingPaciente) {
+        return NextResponse.json(
+          { error: 'Ya existe un paciente con ese número de historia clínica' },
+          { status: 400 }
+        );
+      }
     }
 
-    paciente.historiaClinica.antecedentes = data.historiaClinica.antecedentes;
-    paciente.historiaClinica.alergias = data.historiaClinica.alergias;
+    const updatedPaciente = await Paciente.findByIdAndUpdate(
+      params.id,
+      {
+        $set: {
+          nombre: data.nombre,
+          apellido: data.apellido,
+          numeroHistoriaClinica: data.numeroHistoriaClinica,
+          dni: data.dni,
+          telefono: data.telefono,
+          email: data.email || '',
+          'historiaClinica.antecedentes': data.antecedentes || '',
+          'historiaClinica.alergias': data.alergias ? data.alergias.split(',').map((a: string) => a.trim()) : []
+        }
+      },
+      { new: true }
+    );
 
-    await paciente.save();
-
-    return NextResponse.json(paciente);
-  } catch (error) {
-    console.error('Error al actualizar paciente:', error);
+    return NextResponse.json(updatedPaciente);
+  } catch (error: any) {
+    if (error.code === 11000) {
+      return NextResponse.json(
+        { error: 'Ya existe un paciente con ese número de historia clínica' },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
       { error: 'Error al actualizar el paciente' },
       { status: 500 }

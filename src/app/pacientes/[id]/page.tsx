@@ -31,6 +31,7 @@ interface Paciente {
   dni: string;
   telefono: string;
   email?: string;
+  numeroHistoriaClinica?: string;
   fechaNacimiento?: string;
   historiaClinica?: {
     antecedentes?: string;

@@ -12,6 +12,7 @@ const pacienteSchema = z.object({
   dni: z.string().min(7, 'DNI inválido'),
   telefono: z.string().min(8, 'Teléfono inválido'),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
+  numeroHistoriaClinica: z.string().min(1, 'El número de historia clínica es requerido'),
   antecedentes: z.string().optional(),
   alergias: z.string().optional()
 });
@@ -117,6 +118,20 @@ export default function EditarPacientePage() {
                 />
                 {errors.apellido && (
                   <p className="mt-1 text-sm text-red-400">{errors.apellido.message}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Número de Historia Clínica
+                </label>
+                <input
+                  type="text"
+                  {...register('numeroHistoriaClinica')}
+                  className="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+                {errors.numeroHistoriaClinica && (
+                  <p className="mt-1 text-sm text-red-400">{errors.numeroHistoriaClinica.message}</p>
                 )}
               </div>
 
