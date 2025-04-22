@@ -111,4 +111,30 @@ export async function POST(
       { status: 500 }
     );
   }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await connectDB();
+    const { id } = params;
+
+    const paciente = await Paciente.findByIdAndDelete(id);
+    if (!paciente) {
+      return NextResponse.json(
+        { error: 'Paciente no encontrado' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ message: 'Paciente eliminado con éxito' });
+  } catch (error) {
+    console.error('Error al eliminar paciente:', error);
+    return NextResponse.json(
+      { error: 'Error al eliminar el paciente' },
+      { status: 500 }
+    );
+  }
 } 

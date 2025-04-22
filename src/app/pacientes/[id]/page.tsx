@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import TratamientoModal from '@/components/TratamientoModal';
 import ImagenModal from '@/components/ImagenModal';
@@ -51,6 +51,7 @@ interface TratamientoModalData {
 
 export default function DetallePacientePage() {
   const params = useParams();
+  const router = useRouter();
   const [paciente, setPaciente] = useState<Paciente | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -136,6 +137,28 @@ export default function DetallePacientePage() {
             >
               Editar Paciente
             </Link>
+            <button
+              onClick={async () => {
+                if (confirm('¿Estás seguro de que deseas eliminar este paciente? Esta acción no se puede deshacer.')) {
+                  try {
+                    const response = await fetch(`/api/pacientes/${paciente._id}`, {
+                      method: 'DELETE',
+                    });
+                    if (response.ok) {
+                      router.push('/pacientes');
+                    } else {
+                      alert('Error al eliminar el paciente');
+                    }
+                  } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error al eliminar el paciente');
+                  }
+                }
+              }}
+              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+            >
+              Eliminar Paciente
+            </button>
             <Link
               href="/pacientes"
               className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
